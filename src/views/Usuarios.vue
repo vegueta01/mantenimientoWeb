@@ -1,6 +1,15 @@
 <template>
-  <div class="container">
-    <b-form @submit="onSubmit" @reset="onReset" v-if="show">
+
+    <b-container class="container mt-5">
+       
+    <b-row>
+        <b-col col md="6">
+          <b-table responsive striped hover :items="usuarios"></b-table>
+        </b-col>
+
+        <b-col col md="6">
+          
+      <b-form @submit="onSubmit" @reset="onReset" v-if="show">
 
         <b-form-group id="groupUSUARIO" label="Usuario:" label-for="USUARIO">                    
           <b-form-input id="USUARIO" type="text" v-model="form.USUARIO" required placeholder="Usuario"></b-form-input>
@@ -49,10 +58,12 @@
           <b-form-checkbox value="that">Check that out</b-form-checkbox>
         </b-form-checkbox-group>
       </b-form-group> -->
-      <b-button type="submit" variant="primary">Submit</b-button>
+      <b-button class="mr-5" type="submit" variant="primary">Agregar</b-button>
       <b-button type="reset" variant="danger">Reset</b-button>
-    </b-form>
-  </div>
+    </b-form></b-col>
+       
+    </b-row>
+</b-container> 
 </template>
 
 <script>
@@ -76,7 +87,7 @@ export default {
         "TRANSPORTADOR_AUTORIZA": "transportador 1",
         "IP_USUARIO": null
       },
-      
+      usuarios:[],
       perfiles:["ADMINISTRATIVO","OPERATIVO","CONTRATISTA"],
       tipoDocumentos:["CC","TI","OTRO"],
       estados:["A","B","C"],
@@ -89,7 +100,16 @@ export default {
       show: true
     }
   },
+  mounted (){
+     this.getData()
+  },
   methods: {
+    getData(){
+      this.$http.get('http://192.168.0.101:3000/users').then(resp=>{
+        console.log({resp});
+        this.usuarios = resp.data.rows;
+      });
+    },
     onSubmit (evt) {
       evt.preventDefault();
       let data = Object.assign({}, this.form);
@@ -97,33 +117,34 @@ export default {
       console.log({data});  
       const auth = {
             // headers: {Authorization:'JWT ' + localStorage.getItem('token')} 
-            headers:{ headers: {'Content-Type':'application/json'} }
+            headers:{ headers: {'Content-Type':'application/json'} },
+            data
         }
-        let uri = 'http://localhost:3000/users';
-              this.axios.get(uri).then((response) => {
-                  // this.tickets = response.data;
-                  console.log({response}); 
-              });
-      // this.$http.get('http://localhost:3000/users',auth).then(resp=>{
-      //   console.log({resp});        
-      // });
-      alert(JSON.stringify(this.form));
+        // let uri = 'http://localhost:3000/users';
+        //       this.axios.get(uri).then((response) => {
+        //           // this.tickets = response.data;
+        //           console.log({response}); 
+        //       });
+      this.$http.post('http://localhost:3000/users',data).then(resp=>{
+          this.getData();
+      });
+      // alert(JSON.stringify(this.form));
     },
     onReset (evt) {
       evt.preventDefault();
       /* Reset our form values */
         this.form.USUARIO= "",
         this.form.COMPANIA= "",
-        this.form.PERFIL= "",
-        this.form.TIPODOC= "",
+        this.form.PERFIL= "OPERATIVO",
+        this.form.TIPODOC= "CC",
         this.form.DOCUMENTO= null,
         this.form.NOMBRE= "",
-        this.form.ESTADO= "",
-        this.form.FORMATO_FECHA= "",
+        this.form.ESTADO= "A",
+        this.form.FORMATO_FECHA= "DD/MM/YYYY",
         this.form.EMAIL= null,
         this.form.USUARIO_INSERCION= "",
         this.form.USUARIO_MODIFICACION= null,
-        this.form.FECHA_INSERCION= 0,
+        this.form.FECHA_INSERCION= new Date(),
         this.form.FECHA_MODIFICACION= null,
         this.form.TRANSPORTADOR_AUTORIZA= null,
         this.form.IP_USUARIO= null
